@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,6 +18,21 @@ namespace avtomat
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
+            using (Context DB = new Context("name=TestConnection"))
+            {
+                TGROUP test = new TGROUP()
+                {
+                    Id = 7,
+                    Name = "Tom"
+                };
+                
+
+            }
+
+
         }
+
+
     }
+    
 }
