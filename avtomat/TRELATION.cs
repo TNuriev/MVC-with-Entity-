@@ -9,17 +9,15 @@ using System.Threading.Tasks;
 
 namespace avtomat
 {
-    [Table("TRELATION")]
     public class TRELATION
     {
-        [ForeignKey("ParentGroup")] // Указывает связь с таблицей TGROUP
+        [Key, Column(Order = 0)]
         public long IdParent { get; set; }
-
-        [ForeignKey("ChildGroup")] // Указывает связь с таблицей TGROUP
+        [Key, Column(Order = 1)]
         public long IdChild { get; set; }
-
-        // Навигационные свойства
+        public TGROUP Parent { get; set; }
+        public TGROUP Child { get; set; }
     }
 
-    
+
 }

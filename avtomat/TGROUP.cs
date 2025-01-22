@@ -12,15 +12,11 @@ namespace avtomat
     [Table("TGROUP")]
     public class TGROUP
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Указывает, что ID будет автоинкрементироваться
-        [Column("Id", TypeName = "bigint")]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Column("id")]
         public long Id { get; set; }
-
-        [Required] // Указывает, что поле не может быть null
-        [Column("Name", TypeName = "varchar(255)")]
+        [Column("name")]
         public string Name { get; set; }
-
     }
 
 }

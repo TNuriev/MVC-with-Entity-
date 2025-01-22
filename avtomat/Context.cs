@@ -9,9 +9,11 @@ namespace avtomat
 {
     public partial class Context : DbContext
     {
+        public DbSet<TGROUP> TGroup { get; set; }
+        public DbSet<TRELATION> TRelation { get; set; }
+
         public Context(string conneсtionName) : base(conneсtionName)
         {
         }
-        //public virtual DbSet<TGROUP> Test EntityProperty { get; set; }
     }
 }
