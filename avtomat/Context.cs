@@ -11,6 +11,7 @@ namespace avtomat
     {
         public DbSet<TGROUP> TGroup { get; set; }
         public DbSet<TRELATION> TRelation { get; set; }
+        public DbSet<TPROPERTY> TPROPERTY { get; set; }
 
         public Context(string conneсtionName) : base(conneсtionName)
         {

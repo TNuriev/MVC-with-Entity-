@@ -4,8 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Windows.Forms;
-using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
 using System.IO;
 using System.Data.SqlClient;
 
@@ -38,26 +36,26 @@ namespace avtomat
 
             // 1. Создание новой сущности с названием "Моя первая сущность".
             // Отметим, что id в данном случае можно не задавать, он найдется автоматически.
-            CreateNewTestEntity("Моя первая сущность");
-            var res = _context.SaveChanges();
-            if (res < 0)
-                MessageBox.Show(@"Возникли ошибки при создании объекта с названием 'Моя первая сущность'");
+            //CreateNewTestEntity("Моя первая сущность");
+            //var res = _context.SaveChanges();
+            //if (res < 0)
+            //    MessageBox.Show(@"Возникли ошибки при создании объекта с названием 'Моя первая сущность'");
 
-            // 2. Задаем параметр idUpdate = 1.
-            // И поменяем у найденной сущности параметр TestName на значение "Измененноe наименование".
-            var idUpdate = 1;//При повторном запуске программы можно будет поменять на другой сущестующий id.
-            UpdateName(idUpdate, "Измененноe наименование");
-            res = _context.SaveChanges();
-            if (res < 0)
-                MessageBox.Show(@"Возникли ошибки при обновлении объекта с id = " + idUpdate);
+            //// 2. Задаем параметр idUpdate = 1.
+            //// И поменяем у найденной сущности параметр TestName на значение "Измененноe наименование".
+            //var idUpdate = 1;//При повторном запуске программы можно будет поменять на другой сущестующий id.
+            //UpdateName(idUpdate, "Измененноe наименование");
+            //res = _context.SaveChanges();
+            //if (res < 0)
+            //    MessageBox.Show(@"Возникли ошибки при обновлении объекта с id = " + idUpdate);
 
             // 3. Задаем параметр idDel=1. Тогда произойдет 
             // удаление сущности из таблицы "TestTable", у которого idDel=1.
-            int idDel = 1;//При повтором запуске можно будет значение переменной idDel поменять на другое. Например, idDel=4.
-            DeleteTestEntity(idDel);
-            res = _context.SaveChanges();
-            if (res < 0)
-                MessageBox.Show(@"Возникли ошибки при удалении объекта, у которго id = " + idDel);
+            //int idDel = 1;//При повтором запуске можно будет значение переменной idDel поменять на другое. Например, idDel=4.
+            //DeleteTestEntity(idDel);
+            //res = _context.SaveChanges();
+            //if (res < 0)
+            //    MessageBox.Show(@"Возникли ошибки при удалении объекта, у которго id = " + idDel);
         }
 
         private void CreateNewTestEntity(string name)
