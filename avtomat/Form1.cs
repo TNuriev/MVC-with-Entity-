@@ -13,6 +13,75 @@ namespace avtomat
     public partial class Form1 : Form
     {
         public Context _context;
+        private void TreeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+            //Получаемраскрываемыйузел
+            var expandedNode = e.Node;
+            if (expandedNode != null)
+            {
+                if (expandedNode.Name == "TechnicalGroup")
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                expandedNode.Nodes.Clear();
+                int index = expandedNode.Name.IndexOf('|');
+                string id = expandedNode.Name.Substring(0, index);
+                string name = expandedNode.Name.Substring(index + 1);
+                if (name == "Group")
+                {
+                    var groupId = int.Parse(id);
+
+                    // Загрузка дочерних групп и свойств из базы данных
+                    var childGroups = _context.TGroup.Where(g => g.Id == groupId).ToList();
+                    var properties = _context.TPROPERTY.Where(p => p.group_id == groupId).ToList();
+
+                    // Добавляем дочерние группы
+                    foreach (var group in childGroups)
+                    {
+                        var groupNode = new TreeNode()
+                        {
+                            Text = group.Name,
+                            Name = group.Id + "|Group"
+                        };
+
+                        
+
+                        
+                        var techNode = new TreeNode()
+                        {
+                            Text = "TechnicalGroup",
+                            Name = "TechnicalGroup"
+                        };
+
+                        groupNode.Nodes.Add(techNode);
+                        expandedNode.Nodes.Add(groupNode);
+                    }
+
+                    // Добавляем свойства
+                    foreach (var property in properties)
+                    {
+                        var propertyNode = new TreeNode()
+                        {
+                            Text = property.prop_name,
+                            Name = property.id_prop + "|Property"
+                        };
+
+                        expandedNode.Nodes.Add(propertyNode);
+                    }
+                }
+                if (name == "Property") { return; }
+            }
+            if (expandedNode == null || expandedNode.Nodes.Count == 0)
+            {
+                MessageBox.Show(@"Ошибка: узел пустой!");
+                e.Cancel = true; // Отменяем раскрытие
+                return;
+            }
+
+        }
+
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Закрытие соединения с базой данных
@@ -26,7 +95,8 @@ namespace avtomat
         {
             InitializeComponent();
             //Подписка на событие FormClosing, написать делегат
-            FormClosing += Form1_FormClosing;
+            
+            treeView1.BeforeExpand += TreeView1_BeforeExpand;
             // Создается экземпляр _context класса TestContext и автоматически
             // устанавливается связь с базой данных MS SQL Server согласно тем настройкам,
             // указанным в файле App.config.
@@ -34,7 +104,27 @@ namespace avtomat
             // прописанногов файле App.config.
             // А именно, название подключения - TestConnection.
             _context = new Context("TestConnection");// хз на что ругается
+            FormClosing += Form1_FormClosing;
+            //var child1 = new TreeNode()
+            //{
+            //    Text = "Группа 1",
+            //    Name = "46 | Group"
+            //};
+            //var root = new TreeNode()
+            //{
+            //    Text = "Группа 1",
+            //    Name = "1 | Group"
+            //};
+            //var property1 = new TreeNode()
+            //{
+            //    Text = "Свойство 1",
+            //    Name = "1|Property"
+            //};
 
+            //child1.Nodes.Add(property1);
+            //root.Nodes.Add(child1);
+            //treeView4.Nodes.Add(root);
+            InitRootGroup();
             // 1. Создание новой сущности с названием "Моя первая сущность".
             // Отметим, что id в данном случае можно не задавать, он найдется автоматически.
             //CreateNewTGROUP("Моя первая сущность");
@@ -189,7 +279,7 @@ namespace avtomat
             }
             //+
         }
-        private void DeletetProperty(int id)
+        private void DeleteTProperty(int id)
         {
             if (_context == null) return;
             // Из базы данных находится объект с заданным параметров id
@@ -289,12 +379,75 @@ namespace avtomat
 
             if (test == null)
             {
-                MessageBox.Show($@"Объект с id_parent = {idparent} и с id_child = {idchild} не найде!");
+                MessageBox.Show($@"Объект с id_parent = {idparent} и с id_child = {idchild} не найден!");
                 return;
             }
             _context.TRelation.Remove(test);
             //+
         }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox13_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox10_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            
+        }
+        private void InitRootGroup()
+        {
+            var test = _context.TGroup.Find(1);
+            if (test == null) 
+            {
+                MessageBox.Show($@"Отсутствие коревой группы в базе данных!");
+                return;
+            }
+            
+            
+            TreeNode rootNode = new TreeNode()
+            {
+                Text = test.Name,
+
+                Name = test.Id + "|" + "Group"//
+            };
+            TreeNode techNode = new TreeNode()
+            {
+                Text = "TechnicalGroup",
+                Name = "TechnicalGroup"
+            };
+            rootNode.Nodes.Add(techNode);
+            treeView1.Nodes.Add(rootNode);
+        }
     }
 }
