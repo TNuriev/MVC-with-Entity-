@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace avtomat
 {
@@ -21,5 +22,8 @@ namespace avtomat
         public long group_id { get; set; }
         public TGROUP TGROUP { get; set; }
 
+        
+
+        
     }
 }

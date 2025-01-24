@@ -6,12 +6,13 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Data.SqlClient;
+using System.Xml.Linq;
 
 namespace avtomat
 {
     public partial class Form1 : Form
     {
-        private Context _context;
+        public Context _context;
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Закрытие соединения с базой данных
@@ -36,8 +37,13 @@ namespace avtomat
 
             // 1. Создание новой сущности с названием "Моя первая сущность".
             // Отметим, что id в данном случае можно не задавать, он найдется автоматически.
-            //CreateNewTestEntity("Моя первая сущность");
-            //var res = _context.SaveChanges();
+            //CreateNewTGROUP("Моя первая сущность");
+            //CreateNewTPROPERTY("art", "000", 1);
+            //CreateNewTRELATION(3, 4);
+            //DeleteTgroup(4);
+            //UpdateTRELATION(3, 4, 6, 6); нельзя менять, это составной первичный ключ долбаеб
+            var res = _context.SaveChanges();
+            
             //if (res < 0)
             //    MessageBox.Show(@"Возникли ошибки при создании объекта с названием 'Моя первая сущность'");
 
@@ -51,55 +57,243 @@ namespace avtomat
 
             // 3. Задаем параметр idDel=1. Тогда произойдет 
             // удаление сущности из таблицы "TestTable", у которого idDel=1.
-            //int idDel = 1;//При повтором запуске можно будет значение переменной idDel поменять на другое. Например, idDel=4.
-            //DeleteTestEntity(idDel);
+            //int idDel1 = 1;
+            //DeleteTPROPERTY(idDel1);
+            //int idDel = 20;//При повтором запуске можно будет значение переменной idDel поменять на другое. Например, idDel=4.
+            //DeleteTgroup(idDel);
             //res = _context.SaveChanges();
             //if (res < 0)
             //    MessageBox.Show(@"Возникли ошибки при удалении объекта, у которго id = " + idDel);
         }
 
-        private void CreateNewTestEntity(string name)
+        private void CreateNewTGROUP(string name)
         {
             if (_context == null) return;
-            var maxId = _context.TGroup.Max(x => x.Id) + 1;
-            var newEntity = new TGROUP()
+            var Tgr = _context.TGroup.FirstOrDefault();
+            if (Tgr == null)
             {
-                Id = maxId,
-                Name = name
-            };
-            _context.TGroup.Add(newEntity);
+                var newEntity = new TGROUP()
+                {
+                    Id = 1,
+                    Name = name
+                };
+                _context.TGroup.Add(newEntity);
+            }
+            else {
+                var maxId = _context.TGroup.Max(x => x.Id) + 1;
+                var newEntity = new TGROUP()
+                {
+                    Id = maxId,
+                    Name = name
+                };
+                _context.TGroup.Add(newEntity);
+            }
+            //+
+        }
+        
+        private void UpdateTGROUP(int id, string name)
+        {
+            if (_context == null) return;
+            
+            var testEntityForUpdate = _context.TGroup.FirstOrDefault(x => x.Id == id);
+            if (testEntityForUpdate == null)
+            {
+                MessageBox.Show(@"Объект, предназначенный для обновления, ненайден");
+                return;
+            }
+            testEntityForUpdate.Name = name;
+            //+
+        }
+        private void DeleteTgroup(int id)
+        {
+
+            if (_context == null) return;
+
+            var test = _context.TGroup.SingleOrDefault(x => x.Id == id);
+            if (test == null)
+            {
+                MessageBox.Show($@"Объект с id = {id} не найден!");
+                return;
+            }
+            var tr = _context.TRelation
+                    .Where(x => x.id_parent == id || x.id_child == id)
+                    .ToList();
+            _context.TRelation.RemoveRange(tr);
+
+            var tp = _context.TPROPERTY
+                .Where(x => x.group_id == id)
+                .ToList();
+            _context.TPROPERTY.RemoveRange(tp);
+            _context.SaveChanges();
+            _context.TGroup.Remove(test);
+            //+
+        }
+        private void Form1_Load(object sender, EventArgs e)
+        {
 
         }
-        private void DeleteTestEntity(int id)
+        //private void DeletetTrelation(int id)
+        //{
+        //    var test = _context.TRelation.FirstOrDefault();
+        //    if (test == null)
+        //    {
+        //        MessageBox.Show(@"лошары");
+        //        return;
+        //    }
+            
+        //    MessageBox.Show($"{test.id_child} + {test.id_parent}");
+        //}
+        private void CreateNewTPROPERTY(string name, string value, long group_id)
+        {
+            if (_context == null) return;
+            var Tgr = _context.TPROPERTY.FirstOrDefault();
+            if (Tgr == null)
+            {
+                TGROUP test = _context.TGroup.Find(group_id);
+                if (test != null)
+                {
+                    var newTPROPERTY = new TPROPERTY()
+                    {
+                        id_prop = 1,
+                        prop_name = name,
+                        value = value,
+                        group_id = group_id // прописать искл для наличия в таблице TGROUP
+                    };
+                    _context.TPROPERTY.Add(newTPROPERTY);
+                }
+                else
+                {
+                    MessageBox.Show(@"Возникли ошибки при создании элемента Tproperty ");
+                    return ;
+                }
+            }
+            else 
+            {
+                TGROUP test = _context.TGroup.Find(group_id);
+                if (test != null) {
+                    var maxId = _context.TPROPERTY.Max(x => x.id_prop) + 1;
+                    var newTPROPERTY = new TPROPERTY()
+                    {
+                        id_prop = maxId,
+                        prop_name = name,
+                        value = value,
+                        group_id = group_id // прописать искл для наличия в таблице TGROUP
+                    };
+                    _context.TPROPERTY.Add(newTPROPERTY);
+                }
+                else 
+                { 
+                    MessageBox.Show(@"Возникли ошибки при создании элемента Tproperty ");
+                    return;
+                }
+            }
+            //+
+        }
+        private void DeletetProperty(int id)
         {
             if (_context == null) return;
             // Из базы данных находится объект с заданным параметров id
-            var testEntityForDelete = _context.TGroup.SingleOrDefault(x => x.Id == id);
-            if (testEntityForDelete == null)
+            var test = _context.TPROPERTY.SingleOrDefault(x => x.id_prop == id);
+            if (test == null)
             {
                 MessageBox.Show($@"Объект с id = {id} не найден!");
                 return;
             }
             // Происходит удаление объекта testEntityForDelete из базы данных
-            _context.TGroup.Remove(testEntityForDelete);
+            _context.TPROPERTY.Remove(test);
+            //+
         }
-        private void UpdateName(int id, string name)
+        private void UpdateNameTPROPERTY(int id, string name, string value, long group_id)
         {
             if (_context == null) return;
-            // Находитсяизбазыданныхобъектпопараметруid, укоторогонеобходимоизменитьсвойстваTestName.
-            var testEntityForUpdate = _context.TGroup.FirstOrDefault(x => x.Id == id);
-            if (testEntityForUpdate == null)
+
+            var updateTPROPERTY = _context.TPROPERTY.FirstOrDefault(x => x.id_prop == id);
+            if (updateTPROPERTY == null)
             {
-                MessageBox.Show(@"Объект, предназначенныйдляобновления, ненайден");
+                MessageBox.Show(@"Объект, предназначенный для обновления, ненайден");
                 return;
             }
-            // ПроисходитизменениезначениесвойстваTestNameназначениепеременнойname
-            testEntityForUpdate.Name = name;
+            TGROUP test = _context.TGroup.Find(group_id);
+            if (test != null)
+            {
+                updateTPROPERTY.prop_name = name;
+                updateTPROPERTY.value = value;
+                updateTPROPERTY.group_id = group_id;
+            }
+            else
+            {
+                MessageBox.Show(@"Объект невозвожен к обновлению, ошибка в соответствии с полем group_id");
+                return ;
+            }
+            //+
         }
-
-        private void Form1_Load(object sender, EventArgs e)
+        private void ReadTPROPERTY(long id)
         {
+            if ( _context == null) return;
+        }
+        private void CreateNewTRELATION(long id_parent, long id_child)
+        {
+            if (_context == null) return;
+            var Tgr = _context.TRelation.FirstOrDefault();
+            var test = _context.TRelation.FirstOrDefault(x => x.id_parent == id_parent && x.id_child == id_child);
+            if (test != null)
+            {
+                MessageBox.Show(@"Объект невозвожен к созданию, в таблице уже есть объект с такими параметрами");
+                return;
+            }
+            TGROUP test1 = _context.TGroup.Find(id_parent);
+            TGROUP test2 = _context.TGroup.Find(id_child);
+            if (test1 != null && test2 != null)
+            {
+                var newEntity = new TRELATION()
+                {
+                    id_parent = id_parent,
+                    id_child = id_child
+                };
+                _context.TRelation.Add(newEntity);
+            }
+            else
+            {
+                MessageBox.Show(@"Объект невозвожен к созданию, ошибка в наличии входящих данных в таблице TGROUP");
+                return;
 
+            }
+            //+
+        }
+        //нельзя менять составной первичный ключ 
+        //private void UpdateTRELATION(long id_parent, long id_child, long new_id_parent, long new_id_child)
+        //{
+        //    if (_context == null) return;
+        //    var Tgr = _context.TRelation.FirstOrDefault();
+        //    var test = _context.TRelation.FirstOrDefault(x => x.id_parent == new_id_parent && x.id_child == new_id_child);
+        //    var test3 = _context.TRelation.FirstOrDefault(x => x.id_parent == id_parent && x.id_child == id_child);
+        //    if (test != null)
+        //    {
+        //        MessageBox.Show(@"Объект невозвожен к обновлению, в таблице уже есть объект с такими параметрами");
+        //        return;
+        //    }
+        //    TGROUP test1 = _context.TGroup.Find(id_parent);
+        //    TGROUP test2 = _context.TGroup.Find(id_child);
+        //    if (test1 != null && test2 != null)
+        //    {
+        //        test3.id_parent = new_id_parent;
+        //        test3.id_child = new_id_child;
+        //        return;
+        //    }
+        //    MessageBox.Show(@"Объект невозвожен к обновлению, ошибка в наличии входящих данных в таблице TGROUP");
+        //    //+
+        //}
+        private void DeletetTrelation(int idparent, int idchild)
+        {
+            var test = _context.TRelation.FirstOrDefault(x => x.id_parent == idparent && x.id_child == idchild);
+
+            if (test == null)
+            {
+                MessageBox.Show($@"Объект с id_parent = {idparent} и с id_child = {idchild} не найде!");
+                return;
+            }
+            _context.TRelation.Remove(test);
+            //+
         }
 
     }
