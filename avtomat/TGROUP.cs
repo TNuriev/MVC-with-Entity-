@@ -9,6 +9,7 @@ using System.Data.Entity;
 
 namespace avtomat
 {
+    [Table("TGROUP")]
     public class TGROUP
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]

@@ -9,12 +9,15 @@ using System.Threading.Tasks;
 
 namespace avtomat
 {
+    [Table("TRELATION")]
     public class TRELATION
     {
-        public long IdParent { get; set; }
-        public long IdChild { get; set; }
-        public TGROUP Parent { get; set; }
-        public TGROUP Child { get; set; }
+        [Key, Column(Order=0)]
+        public long id_parent { get; set; }
+        [Key, Column(Order=1)]
+        public long id_child { get; set; }
+        //public TGROUP Parent { get; set; }
+        //public TGROUP Child { get; set; }
     }
 
 
