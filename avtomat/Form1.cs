@@ -24,53 +24,24 @@ namespace avtomat
         {
 
             InitializeComponent();
-            //Подписка на событие FormClosing, написать делегат
+            
+            _context = new Context("TestConnection");
+            InitRootGroup();
+            treeView2.BeforeExpand += TreeView1_BeforeExpand;
             FormClosing += Form1_FormClosing;
-            // Создается экземпляр _context класса TestContext и автоматически
-            // устанавливается связь с базой данных MS SQL Server согласно тем настройкам,
-            // указанным в файле App.config.
-            // В конструктор класса TestContext передается наименование подключения, 
-            // прописанногов файле App.config.
-            // А именно, название подключения - TestConnection.
-            _context = new Context("TestConnection");// хз на что ругается
-
-            //// 1. Создание новой сущности с названием "Моя первая сущность".
-            //// Отметим, что id в данном случае можно не задавать, он найдется автоматически.
-            //CreateNewTestEntity("Моя первая сущность");
-            //var res = _context.SaveChanges();
-            //if (res < 0)
-            //    MessageBox.Show(@"Возникли ошибки при создании объекта с названием 'Моя первая сущность'");
-
-            //// 2. Задаем параметр idUpdate = 1.
-            //// И поменяем у найденной сущности параметр TestName на значение "Измененноe наименование".
-            //var idUpdate = 1;//При повторном запуске программы можно будет поменять на другой сущестующий id.
-            //UpdateName(idUpdate, "Измененноe наименование");
-            //res = _context.SaveChanges();
-            //if (res < 0)
-            //    MessageBox.Show(@"Возникли ошибки при обновлении объекта с id = " + idUpdate);
-
-            //// 3. Задаем параметр idDel=1. Тогда произойдет 
-            //// удаление сущности из таблицы "TestTable", у которого idDel=1.
-            //int idDel = 1;//При повтором запуске можно будет значение переменной idDel поменять на другое. Например, idDel=4.
-            //DeleteTestEntity(idDel);
-            //res = _context.SaveChanges();
-            //if (res < 0)
-            //    MessageBox.Show(@"Возникли ошибки при удалении объекта, у которго id = " + idDel);
-            //DeletetTrelation(1, 2);
-            //DeletetProperty(1);
-            DeleteTgroup(1);
+            
             _context.SaveChanges();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             _context.Database.Connection.Close();
         }
-      
+
         private void DeleteTgroup(int id)
         {
-            
+
             if (_context == null) return;
-            
+
             var test = _context.TGroup.SingleOrDefault(x => x.Id == id);
             if (test == null)
             {
@@ -78,19 +49,19 @@ namespace avtomat
                 return;
             }
             var tr = _context.TRelation
-                    .Where(x => x.id_parent == id || x.id_child == id)  
+                    .Where(x => x.id_parent == id || x.id_child == id)
                     .ToList();
             _context.TRelation.RemoveRange(tr);
-            
+
             var tp = _context.TProperty
                 .Where(x => x.group_id == id)
                 .ToList();
-            _context.TProperty .RemoveRange(tp);
+            _context.TProperty.RemoveRange(tp);
 
             _context.SaveChanges();
 
             _context.TGroup.Remove(test);
-            
+
         }
         private void DeletetTrelation(int idparent, int idchild)
         {
@@ -129,7 +100,7 @@ namespace avtomat
                 };
                 _context.TGroup.Add(newy);
                 return;
-            }  
+            }
             var maxId = _context.TGroup.Max(x => x.Id) + 1;
             var newEntity = new TGROUP()
             {
@@ -137,10 +108,10 @@ namespace avtomat
                 Name = name
             };
             _context.TGroup.Add(newEntity);
-            
+
             //+
         }
-        private void UpdateTgroup(int id, string name)
+        private void UpdateTgroup(long id, string name)
         {
             if (_context == null) return;
 
@@ -151,6 +122,7 @@ namespace avtomat
                 return;
             }
             testEntityForUpdate.Name = name;
+            _context.SaveChanges();
             //+
         }
         private void CreateNewTproperty(string name, string value, long group_id)
@@ -171,10 +143,10 @@ namespace avtomat
                     };
                     _context.TProperty.Add(newTPR);
                     return;
-                }               
+                }
                 MessageBox.Show(@"Возникли ошибки при создании элемента Tproperty ");
-                return;   
-            }                        
+                return;
+            }
             TGROUP test = _context.TGroup.Find(group_id);
             if (test != null)
             {
@@ -188,10 +160,10 @@ namespace avtomat
                 };
                 _context.TProperty.Add(newTPROPERTY);
                 return;
-            }                               
+            }
             MessageBox.Show(@"Возникли ошибки при создании элемента Tproperty ");
             return;
-                
+
             //+
         }
         private void UpdateNameTProperty(int id, string name, string value, long group_id)
@@ -211,10 +183,10 @@ namespace avtomat
                 updateTPROPERTY.value = value;
                 updateTPROPERTY.group_id = group_id;
                 return;
-            }            
+            }
             MessageBox.Show(@"Объект невозвожен к обновлению, ошибка в соответствии с полем group_id");
             return;
-            
+
             //+
         }
         private void CreateNewTrelation(long id_parent, long id_child)
@@ -238,16 +210,208 @@ namespace avtomat
                 };
                 _context.TRelation.Add(newEntity);
                 return;
-            }                     
+            }
             MessageBox.Show(@"Объект невозвожен к созданию, ошибка в наличии входящих данных в таблице TGROUP");
-            return;            
+            return;
             //+
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
         }
-        
 
+        private void tabPage2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+       
+        private void TreeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+
+            //Получаемраскрываемыйузел
+            var expandedNode = e.Node;
+            if (expandedNode == null)
+            {
+                MessageBox.Show(@"Узел пуст!");
+                return;
+            }
+            expandedNode.Nodes.Clear();
+            int index = expandedNode.Name.IndexOf('|');
+            string id = expandedNode.Name.Substring(0, index);
+            string name = expandedNode.Name.Substring(index + 1);
+            if (name == "Propety")
+            {
+                return;
+            }
+            if (name == "Group")
+            {
+                var groupId = long.Parse(id);
+
+                // Загрузка дочерних групп и свойств из базы данных
+                var childGroups = _context.TRelation.Where(g => g.id_parent == groupId).ToList();
+                var properties = _context.TProperty.Where(p => p.group_id == groupId).ToList();
+
+                // Добавляем дочерние группы
+                foreach (var group in childGroups)
+                {
+                    var groupNode = new TreeNode()
+                    {
+                        Text = _context.TGroup.FirstOrDefault(x => x.Id == group.id_child).Name,
+                        Name = group.id_child + "|Group"
+                    };
+
+                    // Добавляем технический узел
+                    var techNode = new TreeNode()
+                    {
+                        Text = "TechnicalGroup",
+                        Name = "TechnicalGroup"
+                    };
+
+                    groupNode.Nodes.Add(techNode);
+                    expandedNode.Nodes.Add(groupNode);
+                }
+
+                // Добавляем свойства
+                foreach (var property in properties)
+                {
+                    var propertyNode = new TreeNode()
+                    {
+                        Text = property.prop_name,
+                        Name = property.id_prop + "|Property|" + property.value
+                    };
+
+                    expandedNode.Nodes.Add(propertyNode);
+                }
+
+            }
+           
+            }
+
+            //}
+
+
+            private void InitRootGroup()
+        {
+            var test = _context.TGroup.Find(1);
+            if (test == null)
+            {
+                MessageBox.Show($@"Отсутствие корневой группы в базе данных");
+                return;
+            }
+            var rootNode = new TreeNode()
+            {
+                Text = test.Name,
+                Name = test.Id + "|Group" 
+            };
+
+            var techNode = new TreeNode()
+            {
+                Text = "TechnicalGroup"
+            };
+
+            rootNode.Nodes.Add(techNode);
+            treeView2.Nodes.Add(rootNode);
+        }
+
+        //Действие команды «Добавить ->Группу»
+        private void группуToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            groupBoxRedactionProperty.Visible = false;
+            groupBoxRedactionGroup.Visible = true;
+            groupBoxRedactionGroup.Enabled = true;
+            NameRedactionGroup.Text = string.Empty;
+            IdRedactionGroup.Text = _context.TGroup.Max(x => x.Id + 1).ToString();
+        }
+
+        //Действие команды «Добавить ->Свойство»
+        private void свойствоToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            groupBoxRedactionGroup.Visible = false;
+            groupBoxRedactionProperty.Enabled = true;
+
+            var selectedNode = treeView2.SelectedNode;
+
+            
+            if (selectedNode == null)
+            {
+                MessageBox.Show(@"Необходимо выбрать группу в дереве для добавления свойства!");
+                return;
+            }
+
+            groupBoxRedactionProperty.Visible = true;
+            NameRedactionProperty.Text = string.Empty;
+            RedactionPropertyValue.Text = string.Empty;
+
+            var nodeNameParts = selectedNode.Name.Split('|');
+            if (!long.TryParse(nodeNameParts[0], out var groupId))
+            {
+                MessageBox.Show(@"Ошибка извлечения ID группы из узла!");
+                return;
+            }
+            IdRedactionProperty.Text = groupId.ToString(); 
+
+        }
+        //Действие команды «Редактировать»
+        private void редактироватьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var selectedNode = treeView2.SelectedNode;
+            if (selectedNode == null)
+            {
+                MessageBox.Show(@"Необходимо выбрать группу в дереве для добавления свойства!");
+                return;
+            }
+            var nodeNameParts = selectedNode.Name.Split('|');
+            if (nodeNameParts[1] == "Group")
+            {
+                groupBoxRedactionGroup.Visible = true;
+                groupBoxRedactionGroup.Enabled = true;
+                groupBoxRedactionProperty.Visible = false;
+                NameRedactionGroup.Text = selectedNode.Text;
+                IdRedactionGroup.Text = nodeNameParts[0];
+            }
+            if (nodeNameParts[1] == "Property")
+            {
+                groupBoxRedactionGroup.Visible = false;
+                groupBoxRedactionGroup.Enabled = true;
+                groupBoxRedactionProperty.Visible = true;
+                groupBoxRedactionProperty.Enabled = true;
+                NameRedactionProperty.Text = selectedNode.Text;
+                IdRedactionProperty.Text = nodeNameParts[0];
+                RedactionPropertyValue.Text = nodeNameParts[2];
+            }
+            
+
+        }
+
+        //Действие команды «Удалить»
+        private void удалитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var selectedNode = treeView2.SelectedNode;
+            if (selectedNode == null)
+            {
+                MessageBox.Show(@"Необходимо выбрать группу в дереве для добавления свойства!");
+                return;
+            }
+            var nodeNameParts = selectedNode.Name.Split('|');
+            if (nodeNameParts[1] == "Group")
+            {
+               
+            }
+            if (nodeNameParts[1] == "Property")
+            {
+               
+            }
+        }
+        private void SaveRedactionGroup_Click(object sender, EventArgs e)
+        {
+            long k;
+            if (Int64.TryParse(IdRedactionGroup.Text, out k))
+            {
+                UpdateTgroup(k, NameRedactionGroup.Text);
+                return;
+            }
+            MessageBox.Show($@"Id = {IdRedactionGroup.Text} не является чилом!");
+        }
     }
 }
