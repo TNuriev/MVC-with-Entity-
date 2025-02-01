@@ -35,6 +35,8 @@
             this.редактироватьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.удалитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBoxRedactionProperty = new System.Windows.Forms.GroupBox();
+            this.asd = new System.Windows.Forms.Label();
+            this.RedactionPropertyValue = new System.Windows.Forms.TextBox();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.IdRedactionProperty = new System.Windows.Forms.TextBox();
@@ -49,8 +51,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.treeView2 = new System.Windows.Forms.TreeView();
-            this.RedactionPropertyValue = new System.Windows.Forms.TextBox();
-            this.asd = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.groupBoxRedactionProperty.SuspendLayout();
             this.groupBoxRedactionGroup.SuspendLayout();
@@ -76,7 +76,7 @@
             this.свойствоToolStripMenuItem1});
             this.добавитьToolStripMenuItem.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.добавитьToolStripMenuItem.Name = "добавитьToolStripMenuItem";
-            this.добавитьToolStripMenuItem.Size = new System.Drawing.Size(90, 26);
+            this.добавитьToolStripMenuItem.Size = new System.Drawing.Size(90, 24);
             this.добавитьToolStripMenuItem.Text = "Добавить";
             // 
             // группуToolStripMenuItem
@@ -126,6 +126,24 @@
             this.groupBoxRedactionProperty.TabIndex = 9;
             this.groupBoxRedactionProperty.TabStop = false;
             this.groupBoxRedactionProperty.Text = "Форма редактирования свойства";
+            // 
+            // asd
+            // 
+            this.asd.AutoSize = true;
+            this.asd.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.asd.Location = new System.Drawing.Point(16, 81);
+            this.asd.Name = "asd";
+            this.asd.Size = new System.Drawing.Size(72, 16);
+            this.asd.TabIndex = 7;
+            this.asd.Text = "Значение";
+            // 
+            // RedactionPropertyValue
+            // 
+            this.RedactionPropertyValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.RedactionPropertyValue.Location = new System.Drawing.Point(142, 75);
+            this.RedactionPropertyValue.Name = "RedactionPropertyValue";
+            this.RedactionPropertyValue.Size = new System.Drawing.Size(397, 22);
+            this.RedactionPropertyValue.TabIndex = 6;
             // 
             // button3
             // 
@@ -222,6 +240,7 @@
             this.SaveRedactionGroup.TabIndex = 4;
             this.SaveRedactionGroup.Text = "Сохранить";
             this.SaveRedactionGroup.UseVisualStyleBackColor = true;
+            this.SaveRedactionGroup.Click += new System.EventHandler(this.SaveRedactionGroup_Click_1);
             // 
             // IdRedactionGroup
             // 
@@ -265,24 +284,6 @@
             this.treeView2.Name = "treeView2";
             this.treeView2.Size = new System.Drawing.Size(173, 393);
             this.treeView2.TabIndex = 7;
-            // 
-            // RedactionPropertyValue
-            // 
-            this.RedactionPropertyValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.RedactionPropertyValue.Location = new System.Drawing.Point(142, 75);
-            this.RedactionPropertyValue.Name = "RedactionPropertyValue";
-            this.RedactionPropertyValue.Size = new System.Drawing.Size(397, 22);
-            this.RedactionPropertyValue.TabIndex = 6;
-            // 
-            // asd
-            // 
-            this.asd.AutoSize = true;
-            this.asd.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.asd.Location = new System.Drawing.Point(16, 81);
-            this.asd.Name = "asd";
-            this.asd.Size = new System.Drawing.Size(72, 16);
-            this.asd.TabIndex = 7;
-            this.asd.Text = "Значение";
             // 
             // Form1
             // 

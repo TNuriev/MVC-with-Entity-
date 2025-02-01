@@ -13,6 +13,7 @@ using System.Data.Entity;
 using System.IO;
 using System.Data.SqlClient;
 using System.Runtime.Remoting.Contexts;
+using System.Drawing.Text;
 
 
 namespace avtomat
@@ -37,7 +38,7 @@ namespace avtomat
             _context.Database.Connection.Close();
         }
 
-        private void DeleteTgroup(int id)
+        private void DeleteTgroup(long id)
         {
 
             if (_context == null) return;
@@ -108,7 +109,7 @@ namespace avtomat
                 Name = name
             };
             _context.TGroup.Add(newEntity);
-
+            _context.SaveChanges();
             //+
         }
         private void UpdateTgroup(long id, string name)
@@ -318,12 +319,17 @@ namespace avtomat
         private void группуToolStripMenuItem_Click(object sender, EventArgs e)
         {
             groupBoxRedactionProperty.Visible = false;
+
             groupBoxRedactionGroup.Visible = true;
             groupBoxRedactionGroup.Enabled = true;
             NameRedactionGroup.Text = string.Empty;
-            IdRedactionGroup.Text = _context.TGroup.Max(x => x.Id + 1).ToString();
-        }
+            IdRedactionGroup.Enabled = false;
+            IdRedactionGroup.Text = null;
+            //IdRedactionGroup.Text = _context.TGroup.Max(x => x.Id + 1).ToString();
 
+
+        }
+        
         //Действие команды «Добавить ->Свойство»
         private void свойствоToolStripMenuItem1_Click(object sender, EventArgs e)
         {
@@ -349,8 +355,8 @@ namespace avtomat
                 MessageBox.Show(@"Ошибка извлечения ID группы из узла!");
                 return;
             }
-            IdRedactionProperty.Text = groupId.ToString(); 
-
+            IdRedactionProperty.Text = groupId.ToString();
+           
         }
         //Действие команды «Редактировать»
         private void редактироватьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -358,9 +364,10 @@ namespace avtomat
             var selectedNode = treeView2.SelectedNode;
             if (selectedNode == null)
             {
-                MessageBox.Show(@"Необходимо выбрать группу в дереве для добавления свойства!");
+                MessageBox.Show(@"Необходимо выбрать группу или свойство в дереве для редактирования!");
                 return;
             }
+
             var nodeNameParts = selectedNode.Name.Split('|');
             if (nodeNameParts[1] == "Group")
             {
@@ -368,21 +375,63 @@ namespace avtomat
                 groupBoxRedactionGroup.Enabled = true;
                 groupBoxRedactionProperty.Visible = false;
                 NameRedactionGroup.Text = selectedNode.Text;
-                IdRedactionGroup.Text = nodeNameParts[0];
+                IdRedactionGroup.Text = nodeNameParts[0];            
             }
+
             if (nodeNameParts[1] == "Property")
             {
                 groupBoxRedactionGroup.Visible = false;
-                groupBoxRedactionGroup.Enabled = true;
                 groupBoxRedactionProperty.Visible = true;
                 groupBoxRedactionProperty.Enabled = true;
                 NameRedactionProperty.Text = selectedNode.Text;
                 IdRedactionProperty.Text = nodeNameParts[0];
                 RedactionPropertyValue.Text = nodeNameParts[2];
-            }
-            
 
+                // Добавляем обработку сохранения
+                SaveRedactionGroup.Click += (s, args) =>
+                {
+                    try
+                    {
+                        int propertyId;
+                        if (!int.TryParse(IdRedactionProperty.Text, out propertyId))
+                        {
+                            MessageBox.Show($@"Id свойства = {IdRedactionProperty.Text} не является числом!");
+                            return;
+                        }
+
+                        string updatedName = NameRedactionProperty.Text;
+                        string updatedValue = RedactionPropertyValue.Text;
+
+                        if (string.IsNullOrWhiteSpace(updatedName) || string.IsNullOrWhiteSpace(updatedValue))
+                        {
+                            MessageBox.Show(@"Название и значение свойства не могут быть пустыми!");
+                            return;
+                        }
+
+                        long groupId;
+                        if (!long.TryParse(IdRedactionProperty.Text, out groupId))
+                        {
+                            MessageBox.Show(@"Ошибка в идентификаторе группы!");
+                            return;
+                        }
+
+                        // Обновляем свойство в базе данных
+                        UpdateNameTProperty(propertyId, updatedName, updatedValue, groupId);
+
+                        // Обновляем текст узла дерева
+                        selectedNode.Text = updatedName;
+                        selectedNode.Name = $"{propertyId}|Property|{updatedValue}";
+
+                        MessageBox.Show(@"Свойство успешно обновлено!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($@"Ошибка при обновлении свойства: {ex.Message}");
+                    }
+                };
+            }
         }
+
 
         //Действие команды «Удалить»
         private void удалитьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -394,24 +443,64 @@ namespace avtomat
                 return;
             }
             var nodeNameParts = selectedNode.Name.Split('|');
+            
             if (nodeNameParts[1] == "Group")
             {
-               
+                groupBoxRedactionGroup.Visible = true;
+                groupBoxRedactionGroup.Enabled = true;
+                groupBoxRedactionProperty.Visible = false;
+                NameRedactionGroup.Enabled = false;
+                IdRedactionGroup.Enabled = false;
+                NameRedactionGroup.Text = null;
+                //NameRedactionGroup.Text = selectedNode.Text;
+                IdRedactionGroup.Text = nodeNameParts[0];
             }
+                                    
             if (nodeNameParts[1] == "Property")
             {
+                groupBoxRedactionGroup.Visible = false;
+                groupBoxRedactionProperty.Visible = true;
+                groupBoxRedactionProperty.Enabled = true;
+                NameRedactionProperty.Text = selectedNode.Text;
+                IdRedactionProperty.Text = nodeNameParts[0];
+                RedactionPropertyValue.Text = nodeNameParts[2];
+
+                // Добавляем обработку сохранения
                
             }
         }
-        private void SaveRedactionGroup_Click(object sender, EventArgs e)
+
+        private void SaveRedactionGroup_Click_1(object sender, EventArgs e)
         {
-            long k;
-            if (Int64.TryParse(IdRedactionGroup.Text, out k))
-            {
-                UpdateTgroup(k, NameRedactionGroup.Text);
+            string groupName = NameRedactionGroup.Text;
+            long groupId = -1;
+            long.TryParse(IdRedactionGroup.Text, out groupId);
+            //if string.IsNullOrEmpty(IdRedactionGroup.Text) || !long.TryParse(IdRedactionGroup.Text, out long groupId)()
+            // Проверяем, является ли операция созданием новой группы
+            
+            if (string.IsNullOrEmpty(NameRedactionGroup.Text) && groupId != -1){
+                DeleteTgroup(groupId);
+                MessageBox.Show(@"Группа успешна удалена");
                 return;
             }
-            MessageBox.Show($@"Id = {IdRedactionGroup.Text} не является чилом!");
+            else if (!string.IsNullOrEmpty(IdRedactionGroup.Text) && groupId == -1)
+            {
+                // Создаем новую группу
+                CreateNewTgroup(groupName);
+                MessageBox.Show(@"Группа успешно создана!");
+                return;
+            }
+            else
+            {
+                // Обновляем существующую группу
+                UpdateTgroup(groupId, groupName);
+                MessageBox.Show(@"Группа успешно обновлена!");
+            }
+
+            // Обновляем дерево
+            //InitRootGroup();
         }
+
+        
     }
 }
