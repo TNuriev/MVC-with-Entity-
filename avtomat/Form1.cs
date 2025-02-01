@@ -33,8 +33,15 @@ namespace avtomat
                     var groupId = int.Parse(id);
 
                     // Загрузка дочерних групп и свойств из базы данных
-                    var childGroups = _context.TGroup.Where(g => g.Id == groupId).ToList();
-                    var properties = _context.TPROPERTY.Where(p => p.group_id == groupId).ToList();
+                    var childGroups = _context.TRelation
+                        .Where(rel => rel.id_parent == groupId)
+                        .Join(_context.TGroup, rel => rel.id_child, group => group.Id, (rel, group) => group)
+                        .ToList();
+
+                    // Загрузка свойств из базы данных
+                    var properties = _context.TPROPERTY
+                        .Where(prop => prop.group_id == groupId)
+                        .ToList();
 
                     // Добавляем дочерние группы
                     foreach (var group in childGroups)
@@ -45,9 +52,9 @@ namespace avtomat
                             Name = group.Id + "|Group"
                         };
 
-                        
 
-                        
+
+
                         var techNode = new TreeNode()
                         {
                             Text = "TechnicalGroup",
@@ -80,6 +87,99 @@ namespace avtomat
             }
 
         }
+        //private void TreeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        //{
+        //    Проверка, что раскрываемый узел существует
+        //    var expandedNode = e.Node;
+        //    if (expandedNode == null)
+        //    {
+        //        MessageBox.Show(@"Ошибка: узел пустой!");
+        //        e.Cancel = true; // Отменяем раскрытие
+        //        return;
+        //    }
+
+        //    Удаление всех дочерних узлов
+        //    expandedNode.Nodes.Clear();
+
+        //    Извлечение данных Id и типа(Group / Property) из свойства Name узла
+        //    var nodeParts = expandedNode.Name.Split('|');
+        //    if (nodeParts.Length != 2)
+        //    {
+        //        MessageBox.Show(@"Ошибка: некорректный формат имени узла!");
+        //        e.Cancel = true;
+        //        return;
+        //    }
+
+        //    string idPart = nodeParts[0];
+        //    string typePart = nodeParts[1];
+
+        //    Если тип узла "Property", прекращаем выполнение
+        //    if (typePart == "Property")
+        //    {
+        //        return;
+        //    }
+
+        //    Если тип узла "Group"
+        //    if (typePart == "Group")
+        //    {
+        //        if (!long.TryParse(idPart, out var groupId))
+        //        {
+        //            MessageBox.Show(@"Ошибка: некорректный идентификатор группы!");
+        //            e.Cancel = true;
+        //            return;
+        //        }
+
+        //        Загрузка дочерних групп из базы данных
+        //        var childGroups = _context.TRelation
+        //            .Where(rel => rel.id_parent == groupId)
+        //            .Join(_context.TGroup, rel => rel.id_child, group => group.Id, (rel, group) => group)
+        //            .ToList();
+
+        //        Загрузка свойств из базы данных
+        //       var properties = _context.TPROPERTY
+        //           .Where(prop => prop.group_id == groupId)
+        //           .ToList();
+
+        //        Добавляем дочерние группы в дерево
+        //        foreach (var group in childGroups)
+        //        {
+        //            var groupNode = new TreeNode
+        //            {
+        //                Text = group.Name,
+        //                Name = $"{group.Id}|Group" // Формат "id|Group"
+        //            };
+
+        //            Добавляем технический узел
+        //           var techNode = new TreeNode
+        //           {
+        //               Text = "TechnicalGroup",
+        //               Name = "TechnicalGroup"
+        //           };
+        //            groupNode.Nodes.Add(techNode);
+
+        //            expandedNode.Nodes.Add(groupNode);
+        //        }
+
+        //        Добавляем свойства в дерево
+        //        foreach (var property in properties)
+        //        {
+        //            var propertyNode = new TreeNode
+        //            {
+        //                Text = property.prop_name,
+        //                Name = $"{property.id_prop}|Property" // Формат "id|Property"
+        //            };
+
+        //            expandedNode.Nodes.Add(propertyNode);
+        //        }
+
+        //        Если дочерние группы и свойства не найдены, информируем пользователя
+        //        if (childGroups.Count == 0 && properties.Count == 0)
+        //        {
+        //            MessageBox.Show(@"Нет дочерних групп или свойств для данного узла.");
+        //        }
+        //    }
+        //}
+
 
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
